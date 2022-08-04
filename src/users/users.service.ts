@@ -2,42 +2,59 @@ import {Injectable} from '@nestjs/common';
 
 import {CreateUserDto} from './dto/create-user.dto';
 import {UpdateUserDto} from './dto/update-user.dto';
+import {PrismaService} from "../core/prisma.service";
+import {User} from "./entities/user.entity";
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
 
-    private users = [];
-
-    getAll() {
-        return this.users
+    constructor(private prismaService: PrismaService) {
     }
 
-    getOneById(id: string) {
-        // Number(id);
-        return this.users.find((user) => user.id == id);
+    async getAll(): Promise <User[]> {
+        return this.prismaService.user.findMany();
     }
 
-    createUser(newUser: CreateUserDto) {
-        this.users.push({
-            ...newUser,
-            id: new Date().valueOf()
+    async getOneById(userId: string): Promise<User> {
+        return this.prismaService.user.findFirst({
+            where: {id: Number(userId)},
+            // select: {email: true, username: true},
+            include: {posts: true}
         });
-        return newUser;
     }
 
-    updateUser(id: string, updateUserDto: UpdateUserDto) {
-        const userForUpdate = this.users.find((user) => user.id == id);
-        console.log('user:', userForUpdate);
-        this.users[userForUpdate] = {...this.users[userForUpdate], ...updateUserDto};
-        console.log(updateUserDto)
-        return updateUserDto;
-
+    async createUser(data: Prisma.UserCreateInput): Promise<User> {
+        return this.prismaService.user.create({
+            data,
+        });
     }
 
-    remove(id: string) {
-        const index = this.users.findIndex((user) => user.id === id);
-        console.log(index);
-        this.users.splice(index, 1);
-        return;
+    // async updateUser(params: {
+    //     id: Prisma.UserWhereUniqueInput;
+    //     data: Prisma.UserUpdateInput;
+    // }): Promise<User> {
+    //     const { id, data } = params;
+    //     return this.prismaService.user.update({
+    //         data,
+    //         Number(id),
+    //     });
+    // }
+
+    async updateUser(id: string, data: UpdateUserDto): Promise<User> {
+        return this.prismaService.user.update({
+            where: {id: Number(id)},
+            data: {
+                username: data.username,
+                age: data.age,
+                status: data.status
+            }
+        })
+    }
+
+    async deleteUser(id: string): Promise<User> {
+        return this.prismaService.user.delete({
+            where: {id: Number(id)}
+        });
     }
 }

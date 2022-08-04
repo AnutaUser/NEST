@@ -21,9 +21,8 @@ export class UsersController {
     }
 
     @Post()
-    createUser(@Body() newUser: CreateUserDto) {
-        console.log(newUser)
-        return this.usersService.createUser(newUser);
+    createUser(@Body() createUserDto: CreateUserDto) {
+        return this.usersService.createUser(createUserDto);
     }
 
     @Patch('/:id')
@@ -34,6 +33,6 @@ export class UsersController {
 
     @Delete('/:id')
     deleteUser(@Param('id') id: string) {
-        return this.usersService.remove(id);
+        return this.usersService.deleteUser(id);
     }
 }
